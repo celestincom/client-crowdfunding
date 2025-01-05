@@ -20,8 +20,6 @@ export const StateContextProvider = ({ children }) => {
     "createCampaign"
   );
 
-  console.log(contract);
-
   const address = useAddress();
   const connect = useMetamask();
 
