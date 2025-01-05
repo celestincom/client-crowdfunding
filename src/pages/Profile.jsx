@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-
-import { DisplayCampaigns } from "../components";
+import { DisplayCampaigns, RestrictedAccessBox} from "../components";
 import { useStateContext } from "../context";
 import { ethers } from "ethers";
 
@@ -10,42 +9,55 @@ const Profile = () => {
   const [totalRaised, setTotalRaised] = useState(0);
   const [totalDonated, setTotalDonated] = useState(0);
 
-  const { address, contract, getUserCampaigns, getCampaigns, getDonations } =
+  const { address, contract, getUserCampaigns, getCampaigns, getDonations, connect } =
     useStateContext();
 
   const fetchCampaigns = async () => {
+    if (!address) return; // Prevent execution if not connected
+
     setIsLoading(true);
-    const allCampaigns = await getCampaigns(); // Get all campaigns
-    const userCampaigns = await getUserCampaigns(); // Get campaigns created by the current user
 
-    setCampaigns(userCampaigns);
+    try {
+      const allCampaigns = await getCampaigns(); // Get all campaigns
+      const userCampaigns = await getUserCampaigns(); // Get campaigns created by the current user
 
-    // Calculate total raised for your campaigns
-    const raisedSum = userCampaigns.reduce(
-      (sum, campaign) => sum + parseFloat(campaign.amountCollected),
-      0
-    );
-    setTotalRaised(raisedSum);
+      setCampaigns(userCampaigns);
 
-    let donatedSum = 0;
-    for (const campaign of allCampaigns) {
-      const donations = await getDonations(campaign.pId);
-      const userDonations = donations.filter(
-        (donation) => donation.donator.toLowerCase() === address.toLowerCase()
-      );
-      const userTotalDonations = userDonations.reduce(
-        (sum, donation) => sum + parseFloat(donation.donation),
+      // Calculate total raised for your campaigns
+      const raisedSum = userCampaigns.reduce(
+        (sum, campaign) => sum + parseFloat(campaign.amountCollected),
         0
       );
-      donatedSum += userTotalDonations;
-    }
-    setTotalDonated(donatedSum);
+      setTotalRaised(raisedSum);
 
-    setIsLoading(false);
+      let donatedSum = 0;
+      for (const campaign of allCampaigns) {
+        const donations = await getDonations(campaign.pId);
+
+        // Only filter if address exists
+        const userDonations = address
+          ? donations.filter(
+              (donation) => donation.donator.toLowerCase() === address.toLowerCase()
+            )
+          : [];
+
+        const userTotalDonations = userDonations.reduce(
+          (sum, donation) => sum + parseFloat(donation.donation),
+          0
+        );
+        donatedSum += userTotalDonations;
+      }
+      setTotalDonated(donatedSum);
+    } catch (error) {
+      console.error("Error fetching campaigns:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    if (contract) fetchCampaigns();
+    // Only fetch campaigns if address and contract exist
+    if (contract && address) fetchCampaigns();
   }, [address, contract]);
 
   const formatValue = (value) => {
@@ -74,25 +86,31 @@ const Profile = () => {
 
   return (
     <div>
-      <div className="summary-container bg-[#1c1c24] p-6 rounded-lg mb-6">
-        <h2 className="text-white text-lg font-semibold mb-4">
-          Profile Transactions Summary
-        </h2>
-        <div className="flex justify-between">
-          <p className="text-[#808191]">Total Raised (Your Campaigns):</p>
-          <p className="text-white">{formatValue(totalRaised)} ETH</p>
-        </div>
-        <div className="flex justify-between mt-2">
-          <p className="text-[#808191]">Total Donated (All Campaigns):</p>
-          <p className="text-white">{formatValue(totalDonated)} ETH</p>
-        </div>
-      </div>
+      {address ? (
+        <>
+          <div className="summary-container bg-[#1c1c24] p-6 rounded-lg mb-6">
+            <h2 className="text-white text-lg font-semibold mb-4">
+              Profile Transactions Summary
+            </h2>
+            <div className="flex justify-between">
+              <p className="text-[#808191]">Total Raised (Your Campaigns):</p>
+              <p className="text-white">{formatValue(totalRaised)} ETH</p>
+            </div>
+            <div className="flex justify-between mt-2">
+              <p className="text-[#808191]">Total Donated (All Campaigns):</p>
+              <p className="text-white">{formatValue(totalDonated)} ETH</p>
+            </div>
+          </div>
 
-      <DisplayCampaigns
-        title="My Campaigns"
-        isLoading={isLoading}
-        campaigns={campaigns}
-      />
+          <DisplayCampaigns
+            title="My Campaigns"
+            isLoading={isLoading}
+            campaigns={campaigns}
+          />
+        </>
+      ) : (
+        <RestrictedAccessBox handleConnect={connect} />
+      )}
     </div>
   );
 };
