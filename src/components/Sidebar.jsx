@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useDisconnect, useAddress } from "@thirdweb-dev/react"; // Added useAddress to check connection
+import { useDisconnect, useAddress } from "@thirdweb-dev/react";
 import { logo, sun } from "../assets";
 import { navlinks } from "../constants";
 
@@ -23,7 +23,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const [isActive, setIsActive] = useState("dashboard");
   const disconnect = useDisconnect(); // Metamask disconnect hook
-  const address = useAddress(); // Check if the user is connected
+  const address = useAddress();
 
   const handleLogout = () => {
     disconnect(); // Disconnect Metamask on logout
@@ -33,7 +33,7 @@ const Sidebar = () => {
   // Filter navlinks based on connection status
   const visibleNavlinks = address
     ? navlinks // Show all links if connected
-    : navlinks.filter((link) => link.name === "dashboard"); // Show only "dashboard" if not connected
+    : navlinks.filter((link) => link.name === "dashboard");
 
   return (
     <div className="flex flex-col items-center justify-between h-[93vh] sticky top-5">
