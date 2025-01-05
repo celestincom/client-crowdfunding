@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
+// TODO: Change the logo image in the Asset file.
 import { logo, sun } from '../assets';
 import { navlinks } from '../constants';
 
