@@ -84,7 +84,7 @@ const Navbar = () => {
         </div>
 
         {showDropdown && filteredCampaigns.length > 0 && (
-          <div className="absolute top-[60px] left-0 w-[80vw] bg-[#1c1c29] z-10 rounded-[10px] shadow-lg max-h-[400px] overflow-y-auto p-4 flex flex-wrap gap-4 custom-scrollbar">
+          <div className="absolute top-[60px] left-0 w-[50vw] bg-[#1c1c29] z-10 rounded-[10px] shadow-lg max-h-[400px] overflow-y-auto p-4 flex flex-wrap gap-4 custom-scrollbar">
             {filteredCampaigns.map((campaign) => (
               <div
                 key={campaign.pId}
