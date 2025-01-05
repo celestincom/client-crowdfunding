@@ -16,10 +16,10 @@ const CampaignDetails = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [amount, setAmount] = useState("");
   const [donators, setDonators] = useState([]);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [updatedCampaign, setUpdatedCampaign] = useState(state);
-  const [campaignCount, setCampaignCount] = useState(0); // New state for campaign count
+  const [creatorCampaignCount, setCreatorCampaignCount] = useState(0); // State for creator's campaign count
 
   const remainingDays = daysLeft(state.deadline);
 
@@ -28,22 +28,22 @@ const CampaignDetails = () => {
     setDonators(data);
   };
 
-  const fetchUserCampaignCount = async () => {
-    const userCampaigns = await getUserCampaigns();
-    setCampaignCount(userCampaigns.length);
+  const fetchCreatorCampaignCount = async () => {
+    const campaigns = await getUserCampaigns(state.owner);
+    setCreatorCampaignCount(campaigns.length);
   };
 
   useEffect(() => {
     if (contract) {
       fetchDonators();
-      fetchUserCampaignCount();
+      fetchCreatorCampaignCount();
     }
   }, [contract, address]);
 
   const handleDonate = async () => {
     setIsLoading(true);
-    setErrorMessage('');
-    setSuccessMessage('');
+    setErrorMessage("");
+    setSuccessMessage("");
 
     try {
       // Perform donation
@@ -53,24 +53,24 @@ const CampaignDetails = () => {
       await fetchDonators();
 
       // Update the amount collected and reset the input
-      setUpdatedCampaign(prevState => ({
+      setUpdatedCampaign((prevState) => ({
         ...prevState,
         amountCollected: prevState.amountCollected + parseFloat(amount),
       }));
 
       // Clear the input field
-      setAmount('');
+      setAmount("");
 
       // Show success message
-      setSuccessMessage('Thank you for your donation!');
+      setSuccessMessage("Thank you for your donation!");
 
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
-      if (error.message.includes('user rejected transaction')) {
-        setErrorMessage('Donation transaction was canceled by the user.');
+      if (error.message.includes("user rejected transaction")) {
+        setErrorMessage("Donation transaction was canceled by the user.");
       } else {
-        setErrorMessage('An error has occurred. Please try again.');
+        setErrorMessage("An error has occurred. Please try again.");
       }
     }
   };
@@ -130,8 +130,8 @@ const CampaignDetails = () => {
                   {state.owner}
                 </h4>
                 <p className="mt-[4px] font-epilogue font-normal text-[12px] text-[#808191]">
-                  {campaignCount}{" "}
-                  {campaignCount === 1 ? "Campaign" : "Campaigns"}
+                  {creatorCampaignCount}{" "}
+                  {creatorCampaignCount === 1 ? "Campaign" : "Campaigns"}
                 </p>
               </div>
             </div>
@@ -190,12 +190,16 @@ const CampaignDetails = () => {
 
             {/* Show success message if exists */}
             {successMessage && (
-              <div className="mt-4 text-green-500 text-center font-epilogue">{successMessage}</div>
+              <div className="mt-4 text-green-500 text-center font-epilogue">
+                {successMessage}
+              </div>
             )}
 
             {/* Show error message if exists */}
             {errorMessage && (
-              <div className="mt-4 text-red-500 text-center font-epilogue">{errorMessage}</div>
+              <div className="mt-4 text-red-500 text-center font-epilogue">
+                {errorMessage}
+              </div>
             )}
 
             <div className="mt-[30px]">
