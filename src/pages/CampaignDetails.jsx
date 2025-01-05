@@ -121,7 +121,14 @@ const CampaignDetails = () => {
         </div>
       </div>
 
-      <div className="mt-[60px] flex lg:flex-row flex-col gap-5">
+      {/* Added campaign title to know for what you donate */}
+      <div className="mt-[20px] flex justify-left">
+        <h2 className="font-epilogue font-semibold text-[24px] text-white text-center">
+          {state.title}
+        </h2>
+      </div>
+
+      <div className="mt-[40px] flex lg:flex-row flex-col gap-5">
         <div className="flex-[2] flex flex-col gap-[40px]">
           <div>
             <h4 className="font-epilogue font-semibold text-[18px] text-white uppercase">
