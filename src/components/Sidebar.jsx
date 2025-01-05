@@ -1,39 +1,51 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-
-// TODO: Change the logo image in the Asset file.
+import { useDisconnect } from '@thirdweb-dev/react';
 import { logo, sun } from '../assets';
 import { navlinks } from '../constants';
 
 const Icon = ({ styles, name, imgUrl, isActive, disabled, handleClick }) => (
-  <div className={`w-[48px] h-[48px] rounded-[10px] ${isActive && isActive === name && 'bg-[#2c2f32]'} flex justify-center items-center ${!disabled && 'cursor-pointer'} ${styles}`} onClick={handleClick}>
-    {!isActive ? (
-      <img src={imgUrl} alt="fund_logo" className="w-1/2 h-1/2" />
-    ) : (
-      <img src={imgUrl} alt="fund_logo" className={`w-1/2 h-1/2 ${isActive !== name && 'grayscale'}`} />
-    )}
+  <div
+    className={`w-12 h-12 rounded-lg flex justify-center items-center 
+      ${isActive === name ? 'bg-[#2c2f32]' : 'bg-transparent'} 
+      ${!disabled ? 'cursor-pointer' : 'opacity-50'} ${styles}`}
+    onClick={!disabled ? handleClick : undefined}
+  >
+    <img
+      src={imgUrl}
+      alt={`${name}_icon`}
+      className={`w-6 h-6 ${isActive !== name && 'grayscale'}`}
+    />
   </div>
-)
+);
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const [isActive, setIsActive] = useState('dashboard');
+  const disconnect = useDisconnect(); // Metamask disconnect hook
+
+  const handleLogout = () => {
+    disconnect();  // Disconnect Metamask on logout
+    navigate('/');  // Redirect to home page
+  };
 
   return (
-    <div className="flex justify-between items-center flex-col sticky top-5 h-[93vh]">
+    <div className="flex flex-col items-center justify-between h-[93vh] sticky top-5">
       <Link to="/">
-        <Icon styles="w-[52px] h-[52px] bg-[#2c2f32]" imgUrl={logo} />
+        <Icon styles="w-13 h-13 bg-[#2c2f32]" imgUrl={logo} />
       </Link>
 
-      <div className="flex-1 flex flex-col justify-between items-center bg-[#1c1c24] rounded-[20px] w-[76px] py-4 mt-12">
-        <div className="flex flex-col justify-center items-center gap-3">
+      <div className="flex-1 flex flex-col items-center justify-between bg-[#1c1c24] rounded-2xl w-[76px] py-4 mt-12">
+        <div className="flex flex-col items-center gap-3">
           {navlinks.map((link) => (
-            <Icon 
+            <Icon
               key={link.name}
               {...link}
               isActive={isActive}
               handleClick={() => {
-                if(!link.disabled) {
+                if (link.name === 'logout') {
+                  handleLogout();  // Call logout handler
+                } else if (!link.disabled) {
                   setIsActive(link.name);
                   navigate(link.link);
                 }
@@ -42,10 +54,10 @@ const Sidebar = () => {
           ))}
         </div>
 
-        <Icon styles="bg-[#1c1c24] shadow-secondary" imgUrl={sun} />
+        <Icon styles="bg-[#1c1c24] shadow-lg" imgUrl={sun} />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Sidebar
+export default Sidebar;
