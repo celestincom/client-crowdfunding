@@ -43,22 +43,32 @@ export const StateContextProvider = ({ children }) => {
   };
 
   const getCampaigns = async () => {
-    const campaigns = await contract.call("getCampaigns");
+    if (!contract) {
+      console.error("Contract is not initialized yet.");
+      return [];
+    }
 
-    const parsedCampaings = campaigns.map((campaign, i) => ({
-      owner: campaign.owner,
-      title: campaign.title,
-      description: campaign.description,
-      target: ethers.utils.formatEther(campaign.target.toString()),
-      deadline: campaign.deadline.toNumber(),
-      amountCollected: ethers.utils.formatEther(
-        campaign.amountCollected.toString()
-      ),
-      image: campaign.image,
-      pId: i,
-    }));
+    try {
+      const campaigns = await contract.call("getCampaigns");
 
-    return parsedCampaings;
+      const parsedCampaigns = campaigns.map((campaign, i) => ({
+        owner: campaign.owner,
+        title: campaign.title,
+        description: campaign.description,
+        target: ethers.utils.formatEther(campaign.target.toString()),
+        deadline: campaign.deadline.toNumber(),
+        amountCollected: ethers.utils.formatEther(
+          campaign.amountCollected.toString()
+        ),
+        image: campaign.image,
+        pId: i,
+      }));
+
+      return parsedCampaigns;
+    } catch (error) {
+      console.error("Error fetching campaigns:", error);
+      return [];
+    }
   };
 
   const getUserCampaigns = async (filterAddress = address) => {
