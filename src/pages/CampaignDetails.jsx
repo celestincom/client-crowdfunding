@@ -16,6 +16,9 @@ const CampaignDetails = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [amount, setAmount] = useState("");
   const [donators, setDonators] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [updatedCampaign, setUpdatedCampaign] = useState(state);
   const [campaignCount, setCampaignCount] = useState(0); // New state for campaign count
 
   const remainingDays = daysLeft(state.deadline);
@@ -39,11 +42,37 @@ const CampaignDetails = () => {
 
   const handleDonate = async () => {
     setIsLoading(true);
+    setErrorMessage('');
+    setSuccessMessage('');
 
-    await donate(state.pId, amount);
+    try {
+      // Perform donation
+      await donate(state.pId, amount);
 
-    navigate("/");
-    setIsLoading(false);
+      // Fetch updated donator list
+      await fetchDonators();
+
+      // Update the amount collected and reset the input
+      setUpdatedCampaign(prevState => ({
+        ...prevState,
+        amountCollected: prevState.amountCollected + parseFloat(amount),
+      }));
+
+      // Clear the input field
+      setAmount('');
+
+      // Show success message
+      setSuccessMessage('Thank you for your donation!');
+
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      if (error.message.includes('user rejected transaction')) {
+        setErrorMessage('Donation transaction was canceled by the user.');
+      } else {
+        setErrorMessage('An error has occurred. Please try again.');
+      }
+    }
   };
 
   return (
@@ -155,9 +184,20 @@ const CampaignDetails = () => {
           </h4>
 
           <div className="mt-[20px] flex flex-col p-4 bg-[#1c1c24] rounded-[10px]">
-            <p className="font-epilogue fount-medium text-[20px] leading-[30px] text-center text-[#808191]">
+            <p className="font-epilogue font-medium text-[20px] leading-[30px] text-center text-[#808191]">
               Fund the campaign
             </p>
+
+            {/* Show success message if exists */}
+            {successMessage && (
+              <div className="mt-4 text-green-500 text-center font-epilogue">{successMessage}</div>
+            )}
+
+            {/* Show error message if exists */}
+            {errorMessage && (
+              <div className="mt-4 text-red-500 text-center font-epilogue">{errorMessage}</div>
+            )}
+
             <div className="mt-[30px]">
               <input
                 type="number"
