@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ethers } from "ethers";
-
 import { useStateContext } from "../context";
 import { CountBox, CustomButton, Loader } from "../components";
 import { calculateBarPercentage, daysLeft } from "../utils";
@@ -10,7 +9,7 @@ import { thirdweb } from "../assets";
 const CampaignDetails = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const { donate, getDonations, contract, address, getUserCampaigns } =
+  const { donate, getDonations, contract, address, getUserCampaigns, connect } =
     useStateContext();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -19,7 +18,7 @@ const CampaignDetails = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [updatedCampaign, setUpdatedCampaign] = useState(state);
-  const [creatorCampaignCount, setCreatorCampaignCount] = useState(0); // State for creator's campaign count
+  const [creatorCampaignCount, setCreatorCampaignCount] = useState(0);
 
   const remainingDays = daysLeft(state.deadline);
 
@@ -44,6 +43,13 @@ const CampaignDetails = () => {
     setIsLoading(true);
     setErrorMessage("");
     setSuccessMessage("");
+
+    // Validate amount before proceeding with the donation
+    if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+      setErrorMessage("Please enter a valid donation amount.");
+      setIsLoading(false);
+      return;
+    }
 
     try {
       // Perform donation
@@ -190,45 +196,60 @@ const CampaignDetails = () => {
 
             {/* Show success message if exists */}
             {successMessage && (
-              <div className="mt-4 text-green-500 text-center font-epilogue">
+              <div className="mt-4 mb-2 text-green-500 text-center font-epilogue">
                 {successMessage}
               </div>
             )}
 
             {/* Show error message if exists */}
             {errorMessage && (
-              <div className="mt-4 text-red-500 text-center font-epilogue">
+              <div className="mt-4 mb-2 text-red-500 text-center font-epilogue">
                 {errorMessage}
               </div>
             )}
 
-            <div className="mt-[30px]">
-              <input
-                type="number"
-                placeholder="ETH 0.1"
-                step="0.01"
-                className="w-full py-[10px] sm:px-[20px] px-[15px] outline-none border-[1px] border-[#3a3a43] bg-transparent font-epilogue text-white text-[18px] leading-[30px] placeholder:text-[#4b5264] rounded-[10px]"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
-
-              <div className="my-[20px] p-4 bg-[#13131a] rounded-[10px]">
-                <h4 className="font-epilogue font-semibold text-[14px] leading-[22px] text-white">
-                  Back it because you believe in it.
-                </h4>
-                <p className="mt-[20px] font-epilogue font-normal leading-[22px] text-[#808191]">
-                  Support the project for no reward, just because it speaks to
-                  you.
+            {!address ? (
+              <div className="text-center text-white">
+                <p className="text-[#808191]">
+                  You need to connect your wallet to donate.
                 </p>
+                <CustomButton
+                  btnType="button"
+                  title="Connect Wallet"
+                  styles="w-full bg-[#8c6dfd] mt-4"
+                  handleClick={connect} // Assuming `connect` is the function to connect wallet
+                />
               </div>
+            ) : (
+              <>
+                {/* Donation input and additional info if the user is connected */}
+                <input
+                  type="number"
+                  placeholder="ETH 0.1"
+                  step="0.01"
+                  className="w-full py-[10px] sm:px-[20px] px-[15px] outline-none border-[1px] border-[#3a3a43] bg-transparent font-epilogue text-white text-[18px] leading-[30px] placeholder:text-[#4b5264] rounded-[10px]"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
 
-              <CustomButton
-                btnType="button"
-                title="Fund Campaign"
-                styles="w-full bg-[#8c6dfd]"
-                handleClick={handleDonate}
-              />
-            </div>
+                <div className="my-[20px] p-4 bg-[#13131a] rounded-[10px]">
+                  <h4 className="font-epilogue font-semibold text-[14px] leading-[22px] text-white">
+                    Back it because you believe in it.
+                  </h4>
+                  <p className="mt-[20px] font-epilogue font-normal leading-[22px] text-[#808191]">
+                    Support the project for no reward, just because it speaks to
+                    you.
+                  </p>
+                </div>
+
+                <CustomButton
+                  btnType="button"
+                  title="Fund Campaign"
+                  styles="w-full bg-[#8c6dfd]"
+                  handleClick={handleDonate}
+                />
+              </>
+            )}
           </div>
         </div>
       </div>
