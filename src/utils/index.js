@@ -8,7 +8,7 @@ export const daysLeft = (deadline) => {
 export const hoursLeft = (deadline) => {
   const difference = new Date(deadline).getTime() - Date.now();
   const remainingHours = difference / (1000 * 3600);
-  return remainingHours.toFixed(0);
+  return remainingHours > 0 ? remainingHours.toFixed(0) : "Ended";
 };
 
 export const calculateBarPercentage = (goal, raisedAmount) => {

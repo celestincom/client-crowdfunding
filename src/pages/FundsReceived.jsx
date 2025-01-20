@@ -94,7 +94,7 @@ const FundsReceived = () => {
                             <div key={index} className="bg-[#3a3a43] p-5 rounded-lg mb-4">
                                 <p className="text-white font-epilogue"><strong>Campaign:</strong> {fund.title}</p>
                                 <p className="text-white font-epilogue"><strong>Amount:</strong> {fund.donation ? `${fund.donation} ETH` : "N/A"}</p>
-                                <p className="text-white font-epilogue"><strong>Date:</strong> {fund.createdAt !== "N/A" ? new Date(fund.createdAt * 1000).toLocaleDateString() : "N/A"}</p>
+                                {/* <p className="text-white font-epilogue"><strong>Date:</strong> {fund.createdAt !== "N/A" ? new Date(fund.createdAt * 1000).toLocaleDateString() : "N/A"}</p> */}
                             </div>
                         ))
                     )}
